@@ -132,9 +132,12 @@ jobs:
             matrix=$(
               yq --output-format json <<< "${matrix}" | jq '[.[] | select('"${query}"')]'
             )
-          else
+          elif ${{ !contains(github.event.pull_request.labels.*.name, 'no-ci-targets' ) }}; then
             echo 'Running all targets.'
             matrix="$(yq --output-format json <<< "${matrix}")"
+          else
+            echo 'No CI targets will be used.'
+            matrix='[]'
           fi
 
           jq -C '[.[] | . += {"pretty": ([.target] + [select(.sub != null).sub]) | join(":")}]' <<< "${matrix}"
